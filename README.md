@@ -1,7 +1,7 @@
 # Team Nmae: Cypher Mantis
 
 Developers:
-@Sayanika19, @EveningLantern , @Sayanipal0906
+@Sayanika19, @EveningLantern , [Sayani](https://github.com/Sayanipal0906)
 
 
 # Anti Corrupto
