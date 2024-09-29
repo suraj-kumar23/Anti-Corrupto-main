@@ -1,10 +1,10 @@
 # Team Nmae: Cypher Mantis
 
-Developers:
-@Sayanika19, @EveningLantern , [Sayani](https://github.com/Sayanipal0906)
+# Developers:
+[Sayanika Raha](https://github.com/Sayanika19?tab=following),[Sayandeep Saha](https://github.com/EveningLantern) , [Sayani](https://github.com/Sayanipal0906), Sayantan deb
 
 
-# Anti Corrupto
+# FraudTracker
 
 In today's governance landscape, transparency and accountability are indispensable for fostering trust
 and combatting corruption. Manual processes and opaque systems often facilitate malfeasance,
