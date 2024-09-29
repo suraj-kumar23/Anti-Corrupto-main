@@ -1,3 +1,8 @@
+# Team Nmae: Cypher Mantis
+#Developers:
+@Sayanika19, @EveningLantern , @Sayanipal0906
+
+
 # Anti Corrupto
 
 In today's governance landscape, transparency and accountability are indispensable for fostering trust
