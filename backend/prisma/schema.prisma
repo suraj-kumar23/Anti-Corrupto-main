@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN // 0
+  USER // 1
+  POLICE // 3
+  REGISTRAR // 4
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  name               String?
+  email              String?             @unique
+  emailVerified      DateTime?
+  hashedPassword     String
+  access_token       String?
+  refresh_token      String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  role               Role                @default(USER)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  sessions           Session[]
+  verificationTokens VerificationToken[]
+  vehicles           Vehicle[]
+  challans           Challan[]
+  ownedLands         Land[]              @relation("LandOwner")
+  transferredLands   TransferLand[]      @relation("PrevOwner")
+  acquiredLands      TransferLand[]      @relation("CurrentOwner")
+  inquiries          LandInquiry[]       @relation("UserInquiries")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([identifier, token])
+}
+
+model Vehicle {
+  id                  String     @id @default(cuid())
+  plateNumber         String     @unique
+  make                String
+  model               String
+  year                Int
+  color               String
+  insurance           Insurance?
+  challans            Challan[]
+  repairs             Repair[]
+  owner               User?      @relation(fields: [ownerId], references: [id])
+  ownerId             String?
+  pollutionDone       DateTime?
+  pollutionExpiration DateTime?
+}
+
+model Insurance {
+  id           String   @id @default(cuid())
+  policyNumber String   @unique
+  startDate    DateTime
+  endDate      DateTime
+  provider     String
+  vehicle      Vehicle? @relation(fields: [vehicleId], references: [id])
+  vehicleId    String   @unique
+}
+
+model Challan {
+  id        String   @id @default(cuid())
+  issueDate DateTime @default(now())
+  fine      String
+  reason    String
+  status    Boolean  @default(false)
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicleId String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  location  String
+  officerId String?
+}
+
+model Repair {
+  id          String   @id @default(cuid())
+  repairDate  DateTime
+  description String
+  cost        Float
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicleId   String
+}
+
+model Land {
+  id                       String         @id @default(cuid())
+  landType                 LandType       @default(Government)
+  web3Id                   String?        @unique
+  location                 String
+  area                     String
+  dimensionOfLand          String
+  landIdentificationNumber String         @unique
+  ownerId                  String
+  owner                    User           @relation("LandOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  parcelStatus             String?
+  currentPrice             String?
+  boughtPrice              String?
+  transferHistory          TransferLand[]
+  inquiries                LandInquiry[]  @relation("LandInquiries") // Relation to LandInquiry for tracking inquiries
+}
+
+enum LandType {
+  Government
+  Residential
+  Commercial
+  Agricultural
+  Industrial
+}
+
+model TransferLand {
+  id             String     @id @default(cuid())
+  prevOwnerId    String
+  prevOwner      User       @relation("PrevOwner", fields: [prevOwnerId], references: [id], onDelete: Cascade)
+  currentOwnerId String
+  currentOwner   User       @relation("CurrentOwner", fields: [currentOwnerId], references: [id], onDelete: Cascade)
+  landId         String
+  land           Land       @relation(fields: [landId], references: [id], onDelete: Cascade)
+  landIdWeb3     String     @unique
+  transferDate   DateTime   @default(now())
+  transferPrice  String     @default("0")
+  landCases      LandCase[]
+}
+
+model LandCase {
+  id              String       @id @default(cuid())
+  caseStatus      String
+  caseDescription String
+  caseDate        DateTime
+  transferLand    TransferLand @relation(fields: [transferLandId], references: [id], onDelete: Cascade)
+  transferLandId  String
+}
+
+model LandInquiry {
+  id String @id @default(cuid())
+
+  clientId String
+  client   User   @relation(name: "UserInquiries", fields: [clientId], references: [id], onDelete: Cascade)
+
+  landId String
+  land   Land   @relation(name: "LandInquiries", fields: [landId], references: [id], onDelete: Cascade)
+
+  inquiryDate DateTime @default(now())
+
+  status InquiryStatus @default(PENDING)
+}
+
+enum InquiryStatus {
+  PENDING // Inquiry is pending approval by the owner or intermediary
+  APPROVED // Inquiry has been approved
+  REJECTED // Inquiry has been rejected
+  COMPLETED // Transaction completed
+}
